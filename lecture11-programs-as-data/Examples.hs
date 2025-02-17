@@ -46,8 +46,8 @@ deriv (Sub e1 e2) x = Sub (deriv e1 x) (deriv e2 x)
 deriv (Negate e1) x = Negate (deriv e1 x)
 deriv (Mul e1 e2) x = Add (Mul e1 (deriv e2 x))
                           (Mul (deriv e1 x) e2)
-deriv (Div e1 e2) x = Sub (Div e1 (deriv e2 x))
-                          (Div (deriv e1 x) e2)
+deriv (Div e1 e2) x = Div (Sub (Mul (deriv e1 x) e2) (Mul e1 (deriv e2 x)))
+                          (Mul e2 e2)
 
 -- | "Compile" an expression into a Haskell function
 compile :: Exp -> Double -> Double
