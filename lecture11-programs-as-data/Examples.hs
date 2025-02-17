@@ -17,7 +17,10 @@ type Var = String
 data Exp = Var Var
          | Const Double
          | Add Exp Exp
+         | Sub Exp Exp
+         | Negate Exp
          | Mul Exp Exp
+         | Div Exp Exp
   deriving (Show)
 
 -- | Evaluate expressions
@@ -27,7 +30,10 @@ eval env (Var v)     = case lookup v env of
                          Just n  -> n
 eval _   (Const n)   = n
 eval env (Add e1 e2) = eval env e1 + eval env e2
+eval env (Sub e1 e2) = eval env e1 - eval env e2
+eval env (Negate e1) = - (eval env e1)
 eval env (Mul e1 e2) = eval env e1 * eval env e2
+eval env (Div e1 e2) = eval env e1 / eval env e2
 
 -- Compute derivative of an expressions with respect to a variable
 deriv :: Exp -> Var -> Exp
@@ -36,8 +42,12 @@ deriv (Var v) x
   | otherwise       = Const 0
 deriv (Const _) _   = Const 0
 deriv (Add e1 e2) x = Add (deriv e1 x) (deriv e2 x)
+deriv (Sub e1 e2) x = Sub (deriv e1 x) (deriv e2 x)
+deriv (Negate e1) x = Negate (deriv e1 x)
 deriv (Mul e1 e2) x = Add (Mul e1 (deriv e2 x))
                           (Mul (deriv e1 x) e2)
+deriv (Div e1 e2) x = Sub (Div e1 (deriv e2 x))
+                          (Div (deriv e1 x) e2)
 
 -- | "Compile" an expression into a Haskell function
 compile :: Exp -> Double -> Double
